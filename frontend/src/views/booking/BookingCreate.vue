@@ -11,7 +11,7 @@
           <el-option
             v-for="v in vehicleList"
             :key="v.id"
-            :label="`${v.plateNumber} - ${v.brand} ${v.model}`"
+            :label="`${v.licensePlate} - ${v.brand} ${v.model}`"
             :value="v.id"
           />
         </el-select>
@@ -83,7 +83,8 @@ const form = ref({
   serviceItemIds: [],
   bookingDate: '',
   timeSlot: '',
-  remark: ''
+  remark: '',
+  currentMileage: 0
 })
 
 const selectedServiceItems = ref([])
@@ -91,11 +92,34 @@ const vehicleList = ref([])
 const workstationList = ref([])
 const serviceItemList = ref([])
 
-const onVehicleChange = () => {}
+const onVehicleChange = (vehicleId) => {
+  const vehicle = vehicleList.value.find(v => v.id === vehicleId)
+  if (vehicle) {
+    form.value.currentMileage = vehicle.currentMileage || 0
+  }
+}
 
 const submit = async () => {
-  form.value.serviceItemIds = selectedServiceItems.value
-  await createBooking(form.value)
+  const [startTime, endTime] = form.value.timeSlot ? form.value.timeSlot.split('-') : [null, null]
+  
+  if (!form.value.workstationId || !form.value.bookingDate || !startTime || !endTime) {
+    ElMessage.warning('请选择工位和预约时段')
+    return
+  }
+  
+  const payload = {
+    workstationId: form.value.workstationId,
+    bookingDate: form.value.bookingDate,
+    startTime,
+    endTime,
+    customerId: form.value.customerId,
+    vehicleId: form.value.vehicleId,
+    serviceItemId: selectedServiceItems.value.length > 0 ? selectedServiceItems.value[0] : null,
+    customerRemark: form.value.remark,
+    currentMileage: form.value.currentMileage
+  }
+  
+  await createBooking(payload)
   ElMessage.success('预约成功')
   router.push('/booking/list')
 }
@@ -108,7 +132,8 @@ const reset = () => {
     serviceItemIds: [],
     bookingDate: '',
     timeSlot: '',
-    remark: ''
+    remark: '',
+    currentMileage: 0
   }
   selectedServiceItems.value = []
 }

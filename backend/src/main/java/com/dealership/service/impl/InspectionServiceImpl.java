@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,21 +38,42 @@ public class InspectionServiceImpl extends ServiceImpl<InspectionReportMapper, I
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> createReport(Map<String, Object> payload) {
         Map<String, Object> reportMap = (Map<String, Object>) payload.get("report");
+        if (reportMap == null) {
+            throw new BusinessException("车检报告数据不能为空");
+        }
         List<Map<String, Object>> issuesList = (List<Map<String, Object>>) payload.get("issues");
+        if (issuesList == null) {
+            issuesList = Collections.emptyList();
+        }
         List<Map<String, Object>> photosList = (List<Map<String, Object>>) payload.get("photos");
+        if (photosList == null) {
+            photosList = Collections.emptyList();
+        }
 
         InspectionReport report = objectMapper.convertValue(reportMap, InspectionReport.class);
-        List<InspectionIssue> issues = null;
-        if (issuesList != null) {
-            issues = objectMapper.convertValue(issuesList, new TypeReference<List<InspectionIssue>>() {});
+        if (report.getVehicleId() == null) {
+            throw new BusinessException("车辆ID不能为空");
         }
-        List<InspectionPhoto> photos = null;
-        if (photosList != null) {
-            photos = objectMapper.convertValue(photosList, new TypeReference<List<InspectionPhoto>>() {});
+        if (report.getTechnicianId() == null) {
+            throw new BusinessException("技师ID不能为空");
         }
+        List<InspectionIssue> issues = objectMapper.convertValue(issuesList, new TypeReference<List<InspectionIssue>>() {});
+        List<InspectionPhoto> photos = objectMapper.convertValue(photosList, new TypeReference<List<InspectionPhoto>>() {});
 
         String reportNo = "RPT" + System.currentTimeMillis();
         report.setReportNo(reportNo);
+        if (report.getInspectionTime() == null) {
+            report.setInspectionTime(LocalDateTime.now());
+        }
+        if (report.getCurrentMileage() == null) {
+            report.setCurrentMileage(0);
+        }
+        if (report.getAppearanceStatus() == null) report.setAppearanceStatus(1);
+        if (report.getTireStatus() == null) report.setTireStatus(1);
+        if (report.getLightStatus() == null) report.setLightStatus(1);
+        if (report.getChassisStatus() == null) report.setChassisStatus(1);
+        if (report.getBatteryStatus() == null) report.setBatteryStatus(1);
+        if (report.getOverallStatus() == null) report.setOverallStatus(1);
         save(report);
 
         if (issues != null && !issues.isEmpty()) {

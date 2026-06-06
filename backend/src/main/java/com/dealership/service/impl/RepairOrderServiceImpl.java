@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,18 +44,21 @@ public class RepairOrderServiceImpl extends ServiceImpl<RepairOrderMapper, Repai
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> createOrder(Map<String, Object> payload) {
         Map<String, Object> orderMap = (Map<String, Object>) payload.get("order");
+        if (orderMap == null) {
+            throw new BusinessException("工单数据不能为空");
+        }
         List<Map<String, Object>> itemsList = (List<Map<String, Object>>) payload.get("items");
+        if (itemsList == null) {
+            itemsList = Collections.emptyList();
+        }
         List<Map<String, Object>> partsList = (List<Map<String, Object>>) payload.get("parts");
+        if (partsList == null) {
+            partsList = Collections.emptyList();
+        }
 
         RepairOrder order = objectMapper.convertValue(orderMap, RepairOrder.class);
-        List<RepairOrderItem> items = null;
-        if (itemsList != null) {
-            items = objectMapper.convertValue(itemsList, new TypeReference<List<RepairOrderItem>>() {});
-        }
-        List<RepairOrderPart> parts = null;
-        if (partsList != null) {
-            parts = objectMapper.convertValue(partsList, new TypeReference<List<RepairOrderPart>>() {});
-        }
+        List<RepairOrderItem> items = objectMapper.convertValue(itemsList, new TypeReference<List<RepairOrderItem>>() {});
+        List<RepairOrderPart> parts = objectMapper.convertValue(partsList, new TypeReference<List<RepairOrderPart>>() {});
 
         String orderNo = "WO" + System.currentTimeMillis();
         order.setOrderNo(orderNo);
@@ -147,6 +151,12 @@ public class RepairOrderServiceImpl extends ServiceImpl<RepairOrderMapper, Repai
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void payOrder(Long orderId, Integer payMethod) {
+        if (orderId == null) {
+            throw new BusinessException("工单ID不能为空");
+        }
+        if (payMethod == null) {
+            throw new BusinessException("支付方式不能为空");
+        }
         RepairOrder order = getById(orderId);
         if (order == null) {
             throw new BusinessException("工单不存在");

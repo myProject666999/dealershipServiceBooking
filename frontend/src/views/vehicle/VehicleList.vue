@@ -12,12 +12,11 @@
       </template>
 
       <el-table :data="vehicleList" v-loading="loading" style="width: 100%">
-        <el-table-column prop="plateNumber" label="车牌号" width="120" />
+        <el-table-column prop="licensePlate" label="车牌号" width="120" />
         <el-table-column prop="brand" label="品牌" width="120" />
         <el-table-column prop="model" label="车型" width="140" />
         <el-table-column prop="vin" label="车架号(VIN)" width="180" />
-        <el-table-column prop="mileage" label="里程(km)" width="120" />
-        <el-table-column prop="buyDate" label="购车日期" width="140" />
+        <el-table-column prop="currentMileage" label="里程(km)" width="120" />
         <el-table-column label="操作" width="260">
           <template #default="scope">
             <el-button size="small" type="primary" @click="viewSuggestion(scope.row)">
@@ -40,7 +39,7 @@
     <el-dialog v-model="editVisible" title="编辑车辆信息" width="500px">
       <el-form :model="editForm" label-width="100px">
         <el-form-item label="车牌号">
-          <el-input v-model="editForm.plateNumber" />
+          <el-input v-model="editForm.licensePlate" />
         </el-form-item>
         <el-form-item label="品牌">
           <el-input v-model="editForm.brand" />
@@ -52,7 +51,7 @@
           <el-input v-model="editForm.vin" />
         </el-form-item>
         <el-form-item label="里程">
-          <el-input-number v-model="editForm.mileage" :min="0" />
+          <el-input-number v-model="editForm.currentMileage" :min="0" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -107,7 +106,7 @@ const confirmEdit = async () => {
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm(`确定删除车辆 ${row.plateNumber}？`, '提示', {
+  ElMessageBox.confirm(`确定删除车辆 ${row.licensePlate}？`, '提示', {
     type: 'warning'
   }).then(async () => {
     await deleteVehicle(row.id)

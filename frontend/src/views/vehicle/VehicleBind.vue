@@ -7,7 +7,7 @@
         <el-input-number v-model="form.customerId" :min="1" />
       </el-form-item>
       <el-form-item label="车牌号">
-        <el-input v-model="form.plateNumber" placeholder="请输入车牌号" />
+        <el-input v-model="form.licensePlate" placeholder="请输入车牌号" />
       </el-form-item>
       <el-form-item label="品牌">
         <el-input v-model="form.brand" placeholder="如：宝马、奔驰" />
@@ -19,10 +19,7 @@
         <el-input v-model="form.vin" placeholder="请输入17位VIN码" />
       </el-form-item>
       <el-form-item label="里程(km)">
-        <el-input-number v-model="form.mileage" :min="0" />
-      </el-form-item>
-      <el-form-item label="购车日期">
-        <el-date-picker v-model="form.buyDate" type="date" value-format="YYYY-MM-DD" />
+        <el-input-number v-model="form.currentMileage" :min="0" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submit">提交绑定</el-button>
@@ -42,12 +39,11 @@ const router = useRouter()
 
 const form = ref({
   customerId: 1,
-  plateNumber: '',
+  licensePlate: '',
   brand: '',
   model: '',
   vin: '',
-  mileage: 0,
-  buyDate: ''
+  currentMileage: 0
 })
 
 const submit = async () => {
@@ -59,12 +55,11 @@ const submit = async () => {
 const reset = () => {
   form.value = {
     customerId: 1,
-    plateNumber: '',
+    licensePlate: '',
     brand: '',
     model: '',
     vin: '',
-    mileage: 0,
-    buyDate: ''
+    currentMileage: 0
   }
 }
 </script>

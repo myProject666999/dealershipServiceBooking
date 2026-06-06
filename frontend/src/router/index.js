@@ -50,6 +50,12 @@ const routes = [
         meta: { title: '预约详情' }
       },
       {
+        path: 'inspection/list',
+        name: 'InspectionList',
+        component: () => import('@/views/inspection/InspectionList.vue'),
+        meta: { title: '车检报告列表' }
+      },
+      {
         path: 'inspection/create',
         name: 'InspectionCreate',
         component: () => import('@/views/inspection/InspectionCreate.vue'),

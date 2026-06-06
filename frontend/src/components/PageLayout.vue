@@ -38,7 +38,7 @@
             <span>车检报告</span>
           </template>
           <el-menu-item index="/inspection/create">创建报告</el-menu-item>
-          <el-menu-item index="/vehicle/list">报告列表</el-menu-item>
+          <el-menu-item index="/inspection/list">报告列表</el-menu-item>
         </el-sub-menu>
         <el-sub-menu index="order">
           <template #title>

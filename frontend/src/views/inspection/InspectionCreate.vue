@@ -105,9 +105,37 @@ const addIssue = () => {
 }
 
 const submit = async () => {
-  await createInspectionReport(form.value)
+  const payload = {
+    report: {
+      bookingId: form.value.bookingId,
+      vehicleId: form.value.vehicleId,
+      technicianId: form.value.technicianId,
+      description: form.value.overallComment,
+      currentMileage: 0,
+      inspectionTime: new Date().toISOString(),
+      appearanceStatus: 1,
+      tireStatus: 1,
+      lightStatus: 1,
+      chassisStatus: 1,
+      batteryStatus: 1,
+      overallStatus: 1
+    },
+    issues: form.value.issues.map(i => ({
+      category: 'other',
+      itemName: i.itemName,
+      description: i.description,
+      severity: i.severity === '严重' ? 3 : (i.severity === '一般' ? 2 : 1),
+      suggestAction: i.suggestion
+    })),
+    photos: form.value.photos.map(url => ({
+      category: 'other',
+      photoUrl: url
+    }))
+  }
+  
+  await createInspectionReport(payload)
   ElMessage.success('创建成功')
-  router.push('/vehicle/list')
+  router.push('/inspection/list')
 }
 
 const reset = () => {
