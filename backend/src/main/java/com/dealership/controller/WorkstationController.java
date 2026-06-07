@@ -24,6 +24,11 @@ public class WorkstationController {
         return Result.success(workstationService.listEnabled());
     }
 
+    @GetMapping("/listAll")
+    public Result<List<Workstation>> listAll() {
+        return Result.success(workstationService.listAll());
+    }
+
     @GetMapping("/availableSlots")
     public Result<Map<LocalDate, List<BookingService.TimeSlot>>> getAvailableSlots(
             @RequestParam Long workstationId,

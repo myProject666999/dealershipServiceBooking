@@ -11,5 +11,7 @@ public interface WorkstationService extends IService<Workstation> {
 
     List<Workstation> listEnabled();
 
+    List<Workstation> listAll();
+
     Map<LocalDate, List<BookingService.TimeSlot>> getAvailableSlots(Long workstationId, LocalDate startDate, int days);
 }

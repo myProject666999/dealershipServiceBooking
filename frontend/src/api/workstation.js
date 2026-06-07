@@ -7,6 +7,13 @@ export function listWorkstations() {
   })
 }
 
+export function listAllWorkstations() {
+  return request({
+    url: '/workstation/listAll',
+    method: 'get'
+  })
+}
+
 export function getAvailableSlots(workstationId, startDate, days) {
   return request({
     url: '/workstation/availableSlots',

@@ -10,11 +10,35 @@
     <div v-loading="loading">
       <el-descriptions :column="2" border v-if="detail">
         <el-descriptions-item label="报告ID">{{ detail.report?.id }}</el-descriptions-item>
+        <el-descriptions-item label="报告编号">{{ detail.report?.reportNo }}</el-descriptions-item>
         <el-descriptions-item label="车辆ID">{{ detail.report?.vehicleId }}</el-descriptions-item>
         <el-descriptions-item label="预约ID">{{ detail.report?.bookingId }}</el-descriptions-item>
         <el-descriptions-item label="技师ID">{{ detail.report?.technicianId }}</el-descriptions-item>
-        <el-descriptions-item label="检测时间" :span="2">{{ detail.report?.createTime }}</el-descriptions-item>
-        <el-descriptions-item label="总体评价" :span="2">{{ detail.report?.overallComment }}</el-descriptions-item>
+        <el-descriptions-item label="当前里程">{{ detail.report?.currentMileage }}</el-descriptions-item>
+        <el-descriptions-item label="检测时间" :span="2">{{ detail.report?.inspectionTime }}</el-descriptions-item>
+        <el-descriptions-item label="总体评价" :span="2">{{ detail.report?.description }}</el-descriptions-item>
+      </el-descriptions>
+
+      <el-divider content-position="left">检查状态</el-divider>
+      <el-descriptions :column="3" border v-if="detail">
+        <el-descriptions-item label="外观状态">
+          <el-tag :type="checkStatusType(detail.report?.appearanceStatus)">{{ checkStatusText(detail.report?.appearanceStatus) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="轮胎状态">
+          <el-tag :type="checkStatusType(detail.report?.tireStatus)">{{ checkStatusText(detail.report?.tireStatus) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="灯光状态">
+          <el-tag :type="checkStatusType(detail.report?.lightStatus)">{{ checkStatusText(detail.report?.lightStatus) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="底盘状态">
+          <el-tag :type="checkStatusType(detail.report?.chassisStatus)">{{ checkStatusText(detail.report?.chassisStatus) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="电池状态">
+          <el-tag :type="checkStatusType(detail.report?.batteryStatus)">{{ checkStatusText(detail.report?.batteryStatus) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="总体状态">
+          <el-tag :type="checkStatusType(detail.report?.overallStatus)">{{ checkStatusText(detail.report?.overallStatus) }}</el-tag>
+        </el-descriptions-item>
       </el-descriptions>
 
       <el-divider content-position="left">检测照片</el-divider>
@@ -36,10 +60,10 @@
         <el-table-column prop="description" label="问题描述" />
         <el-table-column prop="severity" label="严重程度" width="100">
           <template #default="scope">
-            <el-tag :type="severityType(scope.row.severity)">{{ scope.row.severity }}</el-tag>
+            <el-tag :type="severityType(scope.row.severity)">{{ severityText(scope.row.severity) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="suggestion" label="处理建议" />
+        <el-table-column prop="suggestAction" label="处理建议" />
       </el-table>
       <el-empty v-else description="未检测到问题" />
     </div>
@@ -55,9 +79,24 @@ const route = useRoute()
 const loading = ref(false)
 const detail = ref(null)
 
+const severityText = (s) => {
+  const map = { 1: '轻微', 2: '一般', 3: '严重' }
+  return map[s] || '未知'
+}
+
 const severityType = (s) => {
-  const map = { '轻微': 'success', '一般': 'warning', '严重': 'danger' }
+  const map = { 1: 'success', 2: 'warning', 3: 'danger' }
   return map[s] || 'info'
+}
+
+const checkStatusText = (status) => {
+  const map = { 1: '正常', 2: '轻微问题', 3: '需维修' }
+  return map[status] || '未知'
+}
+
+const checkStatusType = (status) => {
+  const map = { 1: 'success', 2: 'warning', 3: 'danger' }
+  return map[status] || 'info'
 }
 
 const loadData = async () => {

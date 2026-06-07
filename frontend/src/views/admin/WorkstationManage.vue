@@ -12,15 +12,21 @@
 
     <el-table :data="list" v-loading="loading" style="width: 100%">
       <el-table-column prop="id" label="ID" width="80" />
+      <el-table-column prop="code" label="工位编号" width="140" />
       <el-table-column prop="name" label="工位名称" />
-      <el-table-column prop="type" label="工位类型" width="150" />
+      <el-table-column label="工位类型" width="120">
+        <template #default="scope">
+          {{ typeMap[scope.row.type] }}
+        </template>
+      </el-table-column>
       <el-table-column label="状态" width="100">
         <template #default="scope">
-          <el-tag :type="scope.row.enabled === 1 ? 'success' : 'info'">
-            {{ scope.row.enabled === 1 ? '启用' : '禁用' }}
+          <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">
+            {{ scope.row.status === 1 ? '启用' : '禁用' }}
           </el-tag>
         </template>
       </el-table-column>
+      <el-table-column prop="remark" label="备注" />
       <el-table-column label="操作" width="180">
         <template #default="scope">
           <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
@@ -31,14 +37,24 @@
 
     <el-dialog v-model="dialogVisible" :title="form.id ? '编辑' : '新增' + '工位'" width="500px">
       <el-form :model="form" label-width="100px">
+        <el-form-item label="工位编号">
+          <el-input v-model="form.code" placeholder="请输入工位编号" />
+        </el-form-item>
         <el-form-item label="工位名称">
-          <el-input v-model="form.name" />
+          <el-input v-model="form.name" placeholder="请输入工位名称" />
         </el-form-item>
         <el-form-item label="工位类型">
-          <el-input v-model="form.type" placeholder="如：保养、维修、洗车" />
+          <el-select v-model="form.type" style="width: 100%">
+            <el-option label="保养" :value="1" />
+            <el-option label="维修" :value="2" />
+            <el-option label="综合" :value="3" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="是否启用">
-          <el-switch v-model="form.enabled" :active-value="1" :inactive-value="0" />
+        <el-form-item label="状态">
+          <el-switch v-model="form.status" :active-value="1" :inactive-value="0" />
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入备注" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -52,7 +68,13 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listWorkstations, saveWorkstation, updateWorkstation, deleteWorkstation } from '@/api/workstation'
+import { listAllWorkstations, saveWorkstation, updateWorkstation, deleteWorkstation } from '@/api/workstation'
+
+const typeMap = {
+  1: '保养',
+  2: '维修',
+  3: '综合'
+}
 
 const loading = ref(false)
 const list = ref([])
@@ -62,7 +84,7 @@ const form = reactive({})
 const loadData = async () => {
   loading.value = true
   try {
-    list.value = await listWorkstations()
+    list.value = await listAllWorkstations()
   } finally {
     loading.value = false
   }
@@ -70,7 +92,10 @@ const loadData = async () => {
 
 const handleAdd = () => {
   Object.keys(form).forEach(k => delete form[k])
-  form.enabled = 1
+  form.status = 1
+  form.type = 1
+  form.code = ''
+  form.remark = ''
   dialogVisible.value = true
 }
 
@@ -80,10 +105,18 @@ const handleEdit = (row) => {
 }
 
 const submit = async () => {
+  const payload = {
+    name: form.name,
+    code: form.code,
+    type: form.type,
+    status: form.status,
+    remark: form.remark
+  }
   if (form.id) {
-    await updateWorkstation(form)
+    payload.id = form.id
+    await updateWorkstation(payload)
   } else {
-    await saveWorkstation(form)
+    await saveWorkstation(payload)
   }
   ElMessage.success('操作成功')
   dialogVisible.value = false

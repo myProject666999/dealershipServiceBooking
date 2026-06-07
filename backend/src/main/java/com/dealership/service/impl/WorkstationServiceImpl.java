@@ -27,6 +27,13 @@ public class WorkstationServiceImpl extends ServiceImpl<WorkstationMapper, Works
     }
 
     @Override
+    public List<Workstation> listAll() {
+        LambdaQueryWrapper<Workstation> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByAsc(Workstation::getId);
+        return list(wrapper);
+    }
+
+    @Override
     public Map<LocalDate, List<BookingService.TimeSlot>> getAvailableSlots(Long workstationId, LocalDate startDate, int days) {
         return bookingService.getAvailableSlots(workstationId, startDate, days);
     }

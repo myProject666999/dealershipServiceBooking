@@ -11,11 +11,28 @@
       <el-form-item label="关联预约">
         <el-input-number v-model="form.bookingId" :min="1" />
       </el-form-item>
-      <el-form-item label="车辆ID">
-        <el-input-number v-model="form.vehicleId" :min="1" />
+      <el-form-item label="车辆">
+        <el-select v-model="form.vehicleId" placeholder="请选择车辆" @change="handleVehicleChange">
+          <el-option
+            v-for="v in vehicleList"
+            :key="v.id"
+            :label="`${v.licensePlate} - ${v.brand} ${v.model}`"
+            :value="v.id"
+          />
+        </el-select>
       </el-form-item>
-      <el-form-item label="技师ID">
-        <el-input-number v-model="form.technicianId" :min="1" />
+      <el-form-item label="当前里程">
+        <el-input-number v-model="form.currentMileage" :min="0" />
+      </el-form-item>
+      <el-form-item label="技师">
+        <el-select v-model="form.technicianId" placeholder="请选择技师">
+          <el-option
+            v-for="t in technicianList"
+            :key="t.id"
+            :label="`${t.name} (${t.code})`"
+            :value="t.id"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="总体评价">
         <el-input v-model="form.overallComment" type="textarea" :rows="2" />
@@ -45,9 +62,9 @@
         </el-form-item>
         <el-form-item label="严重程度">
           <el-select v-model="item.severity">
-            <el-option label="轻微" value="轻微" />
-            <el-option label="一般" value="一般" />
-            <el-option label="严重" value="严重" />
+            <el-option label="轻微" :value="1" />
+            <el-option label="一般" :value="2" />
+            <el-option label="严重" :value="3" />
           </el-select>
         </el-form-item>
         <el-form-item label="建议">
@@ -71,22 +88,44 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import { createInspectionReport } from '@/api/inspection'
+import { listByCustomer } from '@/api/vehicle'
+import { listTechnicians } from '@/api/technician'
 
 const router = useRouter()
 const photoUrlInput = ref('')
+const vehicleList = ref([])
+const technicianList = ref([])
 
 const form = ref({
   bookingId: null,
   vehicleId: null,
   technicianId: null,
+  currentMileage: 0,
   overallComment: '',
   photos: [],
   issues: []
 })
+
+const loadData = async () => {
+  try {
+    vehicleList.value = await listByCustomer(1)
+    technicianList.value = await listTechnicians()
+  } catch (e) {
+    console.error('Failed to load initial data', e)
+  }
+}
+
+const handleVehicleChange = (vehicleId) => {
+  const vehicle = vehicleList.value.find(v => v.id === vehicleId)
+  if (vehicle && vehicle.currentMileage != null) {
+    form.value.currentMileage = vehicle.currentMileage
+  }
+}
 
 const addPhoto = () => {
   if (photoUrlInput.value.trim()) {
@@ -99,7 +138,7 @@ const addIssue = () => {
   form.value.issues.push({
     itemName: '',
     description: '',
-    severity: '一般',
+    severity: 2,
     suggestion: ''
   })
 }
@@ -111,7 +150,7 @@ const submit = async () => {
       vehicleId: form.value.vehicleId,
       technicianId: form.value.technicianId,
       description: form.value.overallComment,
-      currentMileage: 0,
+      currentMileage: form.value.currentMileage,
       inspectionTime: new Date().toISOString(),
       appearanceStatus: 1,
       tireStatus: 1,
@@ -124,7 +163,7 @@ const submit = async () => {
       category: 'other',
       itemName: i.itemName,
       description: i.description,
-      severity: i.severity === '严重' ? 3 : (i.severity === '一般' ? 2 : 1),
+      severity: i.severity,
       suggestAction: i.suggestion
     })),
     photos: form.value.photos.map(url => ({
@@ -143,12 +182,17 @@ const reset = () => {
     bookingId: null,
     vehicleId: null,
     technicianId: null,
+    currentMileage: 0,
     overallComment: '',
     photos: [],
     issues: []
   }
   photoUrlInput.value = ''
 }
+
+onMounted(() => {
+  loadData()
+})
 </script>
 
 <style scoped>
